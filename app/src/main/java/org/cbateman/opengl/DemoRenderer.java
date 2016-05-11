@@ -166,7 +166,6 @@ public class DemoRenderer implements GLSurfaceView.Renderer {
         float scaleValue = getButtonAnimationScaleValue(elapsedTime);
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.scaleM(mModelMatrix, 0, scaleValue, scaleValue, 1.0f);
-        Matrix.multiplyMM(mScratch, 0, mMVPMatrix, 0, mModelMatrix, 0);
 
         // Draw direction button
         mDirectionButton.draw(mMVPMatrix, mModelMatrix);
