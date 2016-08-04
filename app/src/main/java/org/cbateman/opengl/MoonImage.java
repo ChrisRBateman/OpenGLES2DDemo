@@ -22,6 +22,7 @@ public class MoonImage extends Image {
     private int directionY = -1;
     private float speed = MIN_SPEED;
     private int zOrder = 1;
+    private boolean isAnimating = false;
 
     /**
      * MoonImage constructor. Classes that extend Image just need to create a texture and setup
@@ -55,20 +56,22 @@ public class MoonImage extends Image {
     }
 
     /**
-     * Update image location
+     * Update image location.
      *
      * @param timeDeltaSeconds time delta
      */
     public void update(float timeDeltaSeconds) {
-        x = x + (directionX * speed * timeDeltaSeconds);
-        y = y + (directionY * speed * timeDeltaSeconds);
+        if (isAnimating) {
+            x = x + (directionX * speed * timeDeltaSeconds);
+            y = y + (directionY * speed * timeDeltaSeconds);
 
-        if ((x >= MAX_X) || (x <= MIN_X)) {
-            directionX = -directionX;
-            directionY = -directionY;
-            zOrder = -zOrder;
-            x = Math.max(-0.4f, Math.min(x, 0.4f));
-            y = Math.max(-0.4f, Math.min(y, 0.4f));
+            if ((x >= MAX_X) || (x <= MIN_X)) {
+                directionX = -directionX;
+                directionY = -directionY;
+                zOrder = -zOrder;
+                x = Math.max(-0.4f, Math.min(x, 0.4f));
+                y = Math.max(-0.4f, Math.min(y, 0.4f));
+            }
         }
     }
 
@@ -130,5 +133,23 @@ public class MoonImage extends Image {
             } else {
                 speed = MIN_SPEED;
         }
+    }
+
+    /**
+     * Returns state of animation.
+     *
+     * @return state of animation
+     */
+    public boolean isAnimating() {
+        return isAnimating;
+    }
+
+    /**
+     * Turn animation on/off
+     * .
+     * @param setOn animation on/off flag
+     */
+    public void setAnimationOn(boolean setOn) {
+        isAnimating = setOn;
     }
 }

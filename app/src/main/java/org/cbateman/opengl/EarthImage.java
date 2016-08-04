@@ -17,6 +17,8 @@ public class EarthImage extends Image {
      * @param context interface to resources
      */
     public EarthImage(Context context) {
+        super();
+
         mTexId = GraphicUtils.loadTexture(context.getResources().openRawResource(R.raw.earth));
 
         // Setup vertices data for earth.

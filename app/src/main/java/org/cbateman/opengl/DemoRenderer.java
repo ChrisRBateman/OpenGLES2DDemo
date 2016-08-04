@@ -4,9 +4,12 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
+
+import org.cbateman.opengl.text.gltext.GLText;
+
+import java.text.DecimalFormat;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -20,22 +23,28 @@ public class DemoRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = Constants.TAG;
 
     private Context mContext;
-    private long mLastTime;
-    private long mStartTime = -1;
     private int mWidth = 240, mHeight = 320;
 
     private EarthImage mEarthImage;
     private MoonImage mMoonImage;
     private StarsImage mStarsImage;
     private DirectionButton mDirectionButton;
+    private PlayButton mPlayButton;
     private SpeedButton mSpeedButton;
 
-    // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
-    private final float[] mMVPMatrix = new float[16];
+    // mPVMatrix is an abbreviation for "Projection View Matrix"
+    private final float[] mPVMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
     private final float[] mModelMatrix = new float[16];
     private final float[] mScratch = new float[16];
+
+    private final TimeHelper mTimeHelper = new TimeHelper();
+
+    private GLText mGLText;
+    private final StringBuilder mSPFBuffer = new StringBuilder();
+    private final DecimalFormat mSPFFormat = new DecimalFormat("0.####");
+    private final float[] mTextPVMatrix = new float[16];
 
     /**
      * FreeCellRenderer constructor.
@@ -62,6 +71,10 @@ public class DemoRenderer implements GLSurfaceView.Renderer {
                 int viewport[] = { 0, 0, mWidth, mHeight };
                 if (mDirectionButton.handleTouch(e.getX(), e.getY(), mProjectionMatrix, viewport)) {
                     changeDirection();
+
+                } else if (mPlayButton.handleTouch(e.getX(), e.getY(), mProjectionMatrix, viewport)) {
+                    togglePlay();
+
                 } else if (mSpeedButton.handleTouch(e.getX(), e.getY(), mProjectionMatrix, viewport)) {
                     changeSpeed();
                 }
@@ -87,6 +100,10 @@ public class DemoRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+        // Enable blending for alpha channel images
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
     }
 
     /**
@@ -111,13 +128,36 @@ public class DemoRenderer implements GLSurfaceView.Renderer {
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
 
         // Calculate the projection and view transformation
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+        Matrix.multiplyMM(mPVMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
         mEarthImage = new EarthImage(mContext);
         mMoonImage = new MoonImage(mContext);
         mStarsImage = new StarsImage(mContext);
+
         mDirectionButton = new DirectionButton(mContext, width, height);
+        mPlayButton = new PlayButton(mContext, width, height);
         mSpeedButton = new SpeedButton(mContext, width, height);
+
+        mTimeHelper.init();
+
+        mGLText = new GLText(mContext.getAssets());
+        mGLText.load("Roboto-Regular.ttf", 24, 2, 2);
+        mSPFBuffer.setLength(0);
+
+        // Set up a separate projection view for the text
+        float[] projectionMatrix = new float[16];
+        float[] viewMatrix = new float[16];
+        if (width > height) {
+            Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1, 1, 1, 10);
+        }
+        else {
+            Matrix.frustumM(projectionMatrix, 0, -1, 1, -1/ratio, 1/ratio, 1, 10);
+        }
+        float ext = Math.min(width, height) / 2;
+        Matrix.orthoM(viewMatrix, 0, -ext, ext, -ext, ext, 0.1f, 100f);
+
+        // Calculate the projection and view transformation for text
+        Matrix.multiplyMM(mTextPVMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
     }
 
     /**
@@ -129,51 +169,51 @@ public class DemoRenderer implements GLSurfaceView.Renderer {
         // Draw background color
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-        if (mStartTime == -1) {
-            mStartTime = SystemClock.uptimeMillis();
-        }
-
-        // Track time between frames
-        final long time = SystemClock.uptimeMillis();
-        final long timeDelta = time - mLastTime;
-        final float timeDeltaSeconds = mLastTime > 0.0f ? timeDelta / 1000.0f : 0.0f;
-        mLastTime = time;
+        // Update TimeHelper before calling any other methods from TimeHelper
+        mTimeHelper.update();
 
         // Draw stars image
-        mStarsImage.draw(mMVPMatrix);
+        mStarsImage.draw(mPVMatrix);
+
+        float deltaTime = mTimeHelper.getDeltaTime();
 
         // Update moon position
-        mMoonImage.update(timeDeltaSeconds);
+        mMoonImage.update(deltaTime);
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.translateM(mModelMatrix, 0, mMoonImage.getX(), mMoonImage.getY(), 0.0f);
-        Matrix.multiplyMM(mScratch, 0, mMVPMatrix, 0, mModelMatrix, 0);
-
-        // Enable blending for alpha channel images
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glEnable(GLES20.GL_BLEND);
+        Matrix.multiplyMM(mScratch, 0, mPVMatrix, 0, mModelMatrix, 0);
 
         // Draw earth/moon images
         if (mMoonImage.getZOrder() > 0) {
-            mEarthImage.draw(mMVPMatrix);
+            mEarthImage.draw(mPVMatrix);
             mMoonImage.draw(mScratch);
         } else {
             mMoonImage.draw(mScratch);
-            mEarthImage.draw(mMVPMatrix);
+            mEarthImage.draw(mPVMatrix);
         }
 
         // Setup the button animation
-        float elapsedTime = (time - mStartTime) / 1000.0f;
+        float elapsedTime = mTimeHelper.getAccumulatedTime();
         float scaleValue = getButtonAnimationScaleValue(elapsedTime);
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.scaleM(mModelMatrix, 0, scaleValue, scaleValue, 1.0f);
 
         // Draw direction button
-        mDirectionButton.draw(mMVPMatrix, mModelMatrix);
+        mDirectionButton.draw(mPVMatrix, mModelMatrix);
+
+        // Draw play button
+        mPlayButton.draw(mPVMatrix, mModelMatrix);
 
         // Draw speed button
-        mSpeedButton.draw(mMVPMatrix, mModelMatrix);
+        mSpeedButton.draw(mPVMatrix, mModelMatrix);
 
-        GLES20.glDisable(GLES20.GL_BLEND);
+        mSPFBuffer.setLength(0);
+        mSPFBuffer.append(mSPFFormat.format(deltaTime));
+        mSPFBuffer.append(" s/f");
+
+        mGLText.begin(1.0f, 1.0f, 1.0f, 1.0f, mTextPVMatrix);
+        mGLText.draw(mSPFBuffer.toString(), -mWidth / 2 + 2, mHeight / 2 - mGLText.getCharHeight());
+        mGLText.end();
     }
 
     // Private methods -----------------------------------------------------------------------------
@@ -184,6 +224,20 @@ public class DemoRenderer implements GLSurfaceView.Renderer {
     private void changeDirection() {
         if (mMoonImage != null) {
             mMoonImage.changeDirection();
+        }
+    }
+
+    /**
+     * Play/pause moon animation.
+     */
+    private void togglePlay() {
+        if (mMoonImage != null) {
+            mMoonImage.setAnimationOn(!mMoonImage.isAnimating());
+            if (mMoonImage.isAnimating()) {
+                mPlayButton.setCurrentImage(1);
+            } else {
+                mPlayButton.setCurrentImage(0);
+            }
         }
     }
 

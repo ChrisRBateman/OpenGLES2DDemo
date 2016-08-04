@@ -17,6 +17,8 @@ public class StarsImage extends Image {
      * @param context interface to resources
      */
     public StarsImage(Context context) {
+        super();
+
         mTexId = GraphicUtils.loadTexture(context.getResources().openRawResource(R.raw.stars));
 
         // Setup vertices data for stars.
