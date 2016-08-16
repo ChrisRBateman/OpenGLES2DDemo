@@ -16,7 +16,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         mDemoSurfaceView = new DemoSurfaceView(this);
         DemoRenderer demoRenderer = new DemoRenderer(this);
