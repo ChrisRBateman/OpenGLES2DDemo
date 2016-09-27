@@ -11,7 +11,7 @@ import java.nio.ByteOrder;
  */
 public class MoonImage extends Image {
 
-    public static final float MIN_SPEED = 0.30f;
+    public static final float MIN_SPEED = 0.20f;
 
     private static final float MAX_X = 0.4f;
     private static final float MIN_X = -0.4f;
@@ -65,7 +65,7 @@ public class MoonImage extends Image {
             x = x + (directionX * speed * timeDeltaSeconds);
             y = y + (directionY * speed * timeDeltaSeconds);
 
-            if ((x >= MAX_X) || (x <= MIN_X)) {
+            if ((x > MAX_X) || (x < MIN_X)) {
                 directionX = -directionX;
                 directionY = -directionY;
                 zOrder = -zOrder;
@@ -115,7 +115,7 @@ public class MoonImage extends Image {
      * Change moon direction.
      */
     public void changeDirection() {
-        if ((MIN_X < x) && (x < MAX_X)) {
+        if ((MIN_X <= x) && (x <= MAX_X)) {
             directionX = -directionX;
             directionY = -directionY;
         }
@@ -125,7 +125,7 @@ public class MoonImage extends Image {
      * Change moon speed.
      */
     public void changeSpeed() {
-        if ((MIN_X < x) && (x < MAX_X))
+        if ((MIN_X <= x) && (x <= MAX_X))
             if (speed == MIN_SPEED) {
                 speed = 2 * MIN_SPEED;
             } else if (speed == 2 * MIN_SPEED) {
