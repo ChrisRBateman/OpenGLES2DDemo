@@ -58,6 +58,9 @@ public class SpeedButton extends Button {
         mBounds.right = res[0];
         mBounds.bottom = res[1];
 
+        // Setup data after defining vertices and texture(s).
+        setupData();
+
         Log.i(TAG, "SpeedButton constructed");
     }
 

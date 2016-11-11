@@ -57,6 +57,9 @@ public class PlayButton extends Button {
         mBounds.right = res[0];
         mBounds.bottom = res[1];
 
+        // Setup data after defining vertices and texture(s).
+        setupData();
+
         Log.i(TAG, "PlayButton constructed");
     }
 

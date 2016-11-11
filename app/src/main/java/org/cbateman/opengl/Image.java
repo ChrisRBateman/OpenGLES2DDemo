@@ -14,6 +14,9 @@ public abstract class Image {
 
     protected static final String TAG = Constants.TAG;
 
+    private static final int BYTES_PER_FLOAT = 4;
+    private static final int BYTES_PER_SHORT = 2;
+
     protected int mTexId;
     protected int mProgram;
     protected int mPositionLocation;
@@ -23,7 +26,16 @@ public abstract class Image {
     protected FloatBuffer mVertices;
     protected ShortBuffer mIndices;
 
+    final int[] vbo = new int[1];
+    final int[] ibo = new int[1];
+
     public Image() {
+    }
+
+    /**
+     * Setup resources.
+     */
+    protected void setupData() {
         final String vertexShaderCode =
             "uniform mat4 uMVPMatrix;" +
             "attribute vec4 aPosition;" +
@@ -56,6 +68,22 @@ public abstract class Image {
         mIndices = ByteBuffer.allocateDirect(indicesData.length * 2)
                 .order(ByteOrder.nativeOrder()).asShortBuffer();
         mIndices.put(indicesData).position(0);
+
+        GLES20.glGenBuffers(1, vbo, 0);
+        GLES20.glGenBuffers(1, ibo, 0);
+
+        if (vbo[0] > 0 && ibo[0] > 0) {
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo[0]);
+            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, mVertices.capacity() * BYTES_PER_FLOAT,
+                    mVertices, GLES20.GL_STATIC_DRAW);
+
+            GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
+            GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, mIndices.capacity() * BYTES_PER_SHORT,
+                    mIndices, GLES20.GL_STATIC_DRAW);
+
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+            GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+        }
     }
 
     /**
@@ -65,37 +93,45 @@ public abstract class Image {
      * this image
      */
     public void draw(float[] mvpMatrix) {
-        GLES20.glUseProgram(mProgram);
+        if (vbo[0] > 0 && ibo[0] > 0) {
+            GLES20.glUseProgram(mProgram);
 
-        // Load the vertex position
-        mVertices.position(0);
-        GLES20.glVertexAttribPointer(mPositionLocation, 3, GLES20.GL_FLOAT,
-                false,
-                5 * 4, mVertices);
-        // Load the texture coordinate
-        mVertices.position(3);
-        GLES20.glVertexAttribPointer(mTexCoordLocation, 2, GLES20.GL_FLOAT,
-                false,
-                5 * 4,
-                mVertices);
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo[0]);
 
-        GLES20.glEnableVertexAttribArray(mPositionLocation);
-        GLES20.glEnableVertexAttribArray(mTexCoordLocation);
+            GLES20.glVertexAttribPointer(mPositionLocation, 3, GLES20.GL_FLOAT, false, 5 * 4, 0);
+            GLES20.glEnableVertexAttribArray(mPositionLocation);
 
-        // Bind the texture
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexId);
+            GLES20.glVertexAttribPointer(mTexCoordLocation, 2, GLES20.GL_FLOAT, false, 5 * 4, 12);
+            GLES20.glEnableVertexAttribArray(mTexCoordLocation);
 
-        // Set the sampler texture unit to 0
-        GLES20.glUniform1i(mSamplerLocation, 0);
+            // Bind the texture
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexId);
 
-        // Apply the projection and view transformation
-        GLES20.glUniformMatrix4fv(mMVPMatrixLocation, 1, false, mvpMatrix, 0);
+            // Set the sampler texture unit to 0
+            GLES20.glUniform1i(mSamplerLocation, 0);
 
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, mIndices);
+            // Apply the projection and view transformation
+            GLES20.glUniformMatrix4fv(mMVPMatrixLocation, 1, false, mvpMatrix, 0);
 
-        // Disable vertex array
-        GLES20.glDisableVertexAttribArray(mPositionLocation);
-        GLES20.glDisableVertexAttribArray(mTexCoordLocation);
+            // Draw
+            GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
+            GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, 0);
+
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+            GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+        }
+    }
+
+    public void cleanup() {
+        if (vbo[0] > 0) {
+            GLES20.glDeleteBuffers(vbo.length, vbo, 0);
+            vbo[0] = 0;
+        }
+
+        if (ibo[0] > 0) {
+            GLES20.glDeleteBuffers(ibo.length, ibo, 0);
+            ibo[0] = 0;
+        }
     }
 }

@@ -86,7 +86,15 @@ public class DemoRenderer implements GLSurfaceView.Renderer {
      * Clean up any resources used by renderer.
      */
     public void cleanUp() {
+        mEarthImage.cleanup();
+        mMoonImage.cleanup();
+        mStarsImage.cleanup();
 
+        mDirectionButton.cleanup();
+        mPlayButton.cleanup();
+        mSpeedButton.cleanup();
+
+        mGLText.cleanUp();
     }
 
     // GLSurfaceView.Renderer ----------------------------------------------------------------------
@@ -141,7 +149,7 @@ public class DemoRenderer implements GLSurfaceView.Renderer {
         mTimeHelper.init();
 
         mGLText = new GLText(mContext.getAssets());
-        mGLText.load("Roboto-Regular.ttf", 24, 2, 2);
+        mGLText.load("Roboto-Regular.ttf", 28, 2, 2);
         mSPFBuffer.setLength(0);
 
         // Set up a separate projection view for the text

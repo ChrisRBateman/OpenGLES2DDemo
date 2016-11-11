@@ -16,6 +16,9 @@ public class Vertices {
 	final static int TEXCOORD_CNT = 2;                 // Number of Components in Vertex Texture Coords
 	final static int NORMAL_CNT = 3;                   // Number of Components in Vertex Normal
 	private static final int MVP_MATRIX_INDEX_CNT = 1; // Number of Components in MVP matrix index
+
+    private static final int BYTES_PER_FLOAT = 4;
+    private static final int BYTES_PER_SHORT = 2;
 	
 	final static int INDEX_SIZE = Short.SIZE / 8;      // Index Byte Size (Short.SIZE = bits)
 	
@@ -34,6 +37,9 @@ public class Vertices {
 	private int mTextureCoordinateHandle;
 	private int mPositionHandle;
 	private int mMVPIndexHandle;
+
+    final int[] vbo = new int[1];
+    final int[] ibo = new int[1];
 
 	//--Constructor--//
 	// D: create the vertices/indices as specified (for 2d/3d)
@@ -99,29 +105,64 @@ public class Vertices {
 		this.numIndices = length;                       // Save Number of Indices
 	}
 
+    /**
+     * Set up vertex and index buffer objects.
+     */
+	public void setupData() {
+        GLES20.glGenBuffers(1, vbo, 0);
+        GLES20.glGenBuffers(1, ibo, 0);
+
+        if (vbo[0] > 0 && ibo[0] > 0) {
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo[0]);
+            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.capacity() * BYTES_PER_FLOAT,
+                    null, GLES20.GL_DYNAMIC_DRAW);
+
+            GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
+            GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.capacity() * BYTES_PER_SHORT,
+                    indices, GLES20.GL_STATIC_DRAW);
+
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+            GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+        }
+    }
+
+    public void cleanUp() {
+        if (vbo[0] > 0) {
+            GLES20.glDeleteBuffers(vbo.length, vbo, 0);
+            vbo[0] = 0;
+        }
+
+        if (ibo[0] > 0) {
+            GLES20.glDeleteBuffers(ibo.length, ibo, 0);
+            ibo[0] = 0;
+        }
+    }
+
 	//--Bind--//
 	// D: perform all required binding/state changes before rendering batches.
 	//    USAGE: call once before calling draw() multiple times for this buffer.
 	// A: [none]
 	// R: [none]
 	public void bind() {
-		// bind vertex position pointer
-		vertices.position(0);                         // Set Vertex Buffer to Position
-		GLES20.glVertexAttribPointer(mPositionHandle, positionCnt, 
-				GLES20.GL_FLOAT, false, vertexSize, vertices);
-		GLES20.glEnableVertexAttribArray(mPositionHandle);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo[0]);
 
-		// bind texture position pointer
-		vertices.position(positionCnt);  // Set Vertex Buffer to Texture Coords (NOTE: position based on whether color is also specified)
-		GLES20.glVertexAttribPointer(mTextureCoordinateHandle, TEXCOORD_CNT, 
-				GLES20.GL_FLOAT, false, vertexSize, vertices);
-		GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
-		
-		// bind MVP Matrix index position handle
-		vertices.position(positionCnt + TEXCOORD_CNT);
-		GLES20.glVertexAttribPointer(mMVPIndexHandle, MVP_MATRIX_INDEX_CNT, 
-				GLES20.GL_FLOAT, false, vertexSize, vertices);
-		GLES20.glEnableVertexAttribArray(mMVPIndexHandle);
+        // vertices could change every frame so update the gpu memory.
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, numVertices * vertexSize, vertices);
+
+        // bind vertex position pointer
+        GLES20.glVertexAttribPointer(mPositionHandle,
+                positionCnt, GLES20.GL_FLOAT, false, vertexSize, 0);
+        GLES20.glEnableVertexAttribArray(mPositionHandle);
+
+        // bind texture position pointer
+        GLES20.glVertexAttribPointer(mTextureCoordinateHandle,
+                TEXCOORD_CNT, GLES20.GL_FLOAT, false, vertexSize, positionCnt * 4);
+        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+
+        // bind MVP Matrix index position handle
+        GLES20.glVertexAttribPointer(mMVPIndexHandle,
+                MVP_MATRIX_INDEX_CNT, GLES20.GL_FLOAT, false, vertexSize, (positionCnt + TEXCOORD_CNT) * 4);
+        GLES20.glEnableVertexAttribArray(mMVPIndexHandle);
 	}
 
 	//--Draw--//
@@ -133,9 +174,8 @@ public class Vertices {
 	// R: [none]
 	public void draw(int primitiveType, int offset, int numVertices) {
 		if (indices != null) {                          // IF Indices Exist
-			indices.position(offset);                   // Set Index Buffer to Specified Offset
-			//draw indexed
-			GLES20.glDrawElements(primitiveType, numVertices, GLES20.GL_UNSIGNED_SHORT, indices);
+            GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
+            GLES20.glDrawElements(primitiveType, numVertices, GLES20.GL_UNSIGNED_SHORT, offset);
 		}
 		else {                                          // ELSE No Indices Exist
 			//draw direct
@@ -150,5 +190,8 @@ public class Vertices {
 	// R: [none]
 	public void unbind() {
 		GLES20.glDisableVertexAttribArray(mTextureCoordinateHandle);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 }

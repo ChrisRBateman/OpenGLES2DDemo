@@ -231,6 +231,10 @@ public class GLText {
 		return true;                                    // Return Success
 	}
 
+	public void cleanUp() {
+        batch.cleanUp();
+	}
+
 	//--Begin/End Text Drawing--//
 	// D: call these methods before/after (respectively all draw() calls using a text instance
 	//    NOTE: color is set on a per-batch basis, and fonts should be 8-bit alpha only!!!

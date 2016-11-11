@@ -48,7 +48,13 @@ public class SpriteBatch {
 		}
 		vertices.setIndices(indices, 0, len);           // Set Index Buffer for Rendering
         mMVPMatricesHandle = GLES20.glGetUniformLocation(program.getHandle(), "u_MVPMatrix");
+
+		vertices.setupData();
 	}
+
+    public void cleanUp() {
+        vertices.cleanUp();
+    }
 	
 	public void beginBatch(float[] vpMatrix) {
 		numSprites = 0;                                 // Empty Sprite Counter

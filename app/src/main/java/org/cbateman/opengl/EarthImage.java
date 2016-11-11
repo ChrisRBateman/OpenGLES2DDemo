@@ -37,6 +37,9 @@ public class EarthImage extends Image {
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         mVertices.put(verticesData).position(0);
 
+        // Setup data after defining vertices and texture(s).
+        setupData();
+
         Log.i(TAG, "EarthImage constructed");
     }
 }
