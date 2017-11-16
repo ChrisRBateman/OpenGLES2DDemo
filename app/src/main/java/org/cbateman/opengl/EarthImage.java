@@ -9,6 +9,7 @@ import java.nio.ByteOrder;
 /**
  * Renders the earth image.
  */
+@SuppressWarnings("WeakerAccess")
 public class EarthImage extends Image {
 
     /**

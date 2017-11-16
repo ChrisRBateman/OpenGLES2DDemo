@@ -7,6 +7,7 @@ import java.nio.ShortBuffer;
 
 import android.opengl.GLES20;
 
+@SuppressWarnings({"unused", "WeakerAccess", "SameParameterValue"})
 public class Vertices {
 
 	//--Constants--//
@@ -28,7 +29,7 @@ public class Vertices {
 	// NOTE: all members are constant, and initialized in constructor!
 	public final int positionCnt;                      // Number of Position Components (2=2D, 3=3D)
 	public final int vertexStride;                     // Vertex Stride (Element Size of a Single Vertex)
-	public final int vertexSize;                       // Bytesize of a Single Vertex
+	public final int vertexSize;                       // Byte size of a Single Vertex
 	final IntBuffer vertices;                          // Vertex Buffer
 	final ShortBuffer indices;                         // Index Buffer
 	public int numVertices;                            // Number of Vertices in Buffer

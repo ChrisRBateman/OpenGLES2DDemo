@@ -1,5 +1,6 @@
 package org.cbateman.opengl;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
@@ -37,6 +38,7 @@ public class DemoSurfaceView extends GLSurfaceView {
         super.setRenderer(renderer);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         final MotionEvent event = MotionEvent.obtain(e);

@@ -7,6 +7,7 @@ import java.nio.FloatBuffer;
 import android.opengl.GLES20;
 import android.util.Log;
 
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class Utilities {
 
 	public static final int BYTES_PER_FLOAT = 4;

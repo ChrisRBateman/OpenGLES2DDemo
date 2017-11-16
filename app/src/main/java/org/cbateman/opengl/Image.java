@@ -10,6 +10,7 @@ import java.nio.ShortBuffer;
 /**
  * Base class for all images.
  */
+@SuppressWarnings("WeakerAccess")
 public abstract class Image {
 
     protected static final String TAG = Constants.TAG;

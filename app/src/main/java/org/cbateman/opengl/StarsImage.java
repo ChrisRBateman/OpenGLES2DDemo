@@ -9,6 +9,7 @@ import java.nio.ByteOrder;
 /**
  * Renders a background image of stars.
  */
+@SuppressWarnings("WeakerAccess")
 public class StarsImage extends Image {
 
     /**

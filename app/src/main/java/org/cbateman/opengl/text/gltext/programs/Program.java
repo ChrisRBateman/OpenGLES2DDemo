@@ -5,6 +5,7 @@ import android.opengl.GLES20;
 import org.cbateman.opengl.text.gltext.AttribVariable;
 import org.cbateman.opengl.text.gltext.Utilities;
 
+@SuppressWarnings({"unused", "WeakerAccess"})
 public abstract class Program {
 	
 	private int programHandle;

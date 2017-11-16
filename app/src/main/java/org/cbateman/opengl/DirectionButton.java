@@ -10,6 +10,7 @@ import java.nio.ByteOrder;
 /**
  * Clicking direction button changes direction of moon.
  */
+@SuppressWarnings("WeakerAccess")
 public class DirectionButton extends Button {
 
     private final float[] mTranslateMatrix = new float[16];

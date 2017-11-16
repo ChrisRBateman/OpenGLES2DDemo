@@ -6,6 +6,7 @@ import android.util.Log;
  * TimeHelper class provides timing services for rendering frames in the
  * GLSurfaceView.Renderer class.
  */
+@SuppressWarnings("WeakerAccess")
 public class TimeHelper {
 
     private static final String TAG = Constants.TAG;

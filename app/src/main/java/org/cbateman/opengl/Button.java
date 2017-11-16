@@ -7,6 +7,7 @@ import android.opengl.Matrix;
 /**
  * Button class provides support for user input.
  */
+@SuppressWarnings("WeakerAccess")
 public abstract class Button extends Image {
 
     protected RectF mBounds = new RectF();

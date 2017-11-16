@@ -5,6 +5,7 @@ import org.cbateman.opengl.text.gltext.programs.Program;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+@SuppressWarnings({"unused", "WeakerAccess", "PointlessArithmeticExpression"})
 public class SpriteBatch {
 
 	//--Constants--//
@@ -89,7 +90,8 @@ public class SpriteBatch {
 	//    region - the texture region to use for sprite
 	//    modelMatrix - the model matrix to assign to the sprite
 	// R: [none]
-	public void drawSprite(float x, float y, float width, float height,
+	@SuppressWarnings("ManualArrayCopy")
+    public void drawSprite(float x, float y, float width, float height,
                            TextureRegion region, float[] modelMatrix) {
 		if (numSprites == maxSprites) {              // IF Sprite Buffer is Full
 			endBatch();                                  // End Batch

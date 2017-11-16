@@ -20,6 +20,7 @@ import android.opengl.Matrix;
 import org.cbateman.opengl.text.gltext.programs.BatchTextProgram;
 import org.cbateman.opengl.text.gltext.programs.Program;
 
+@SuppressWarnings({"unused", "WeakerAccess", "SameParameterValue"})
 public class GLText {
 
 	//--Constants--//
@@ -30,7 +31,7 @@ public class GLText {
 	public final static int CHAR_NONE = 32;                 // Character to Use for Unknown (ASCII Code)
 	public final static int CHAR_UNKNOWN = (CHAR_CNT - 1);  // Index of the Unknown Character
 
-	public final static int FONT_SIZE_MIN = 6;          // Minumum Font Size (Pixels)
+	public final static int FONT_SIZE_MIN = 6;          // Minimum Font Size (Pixels)
 	public final static int FONT_SIZE_MAX = 180;        // Maximum Font Size (Pixels)
 
 	public final static int CHAR_BATCH_SIZE = 24;       // Number of Characters to Render Per Batch
@@ -121,7 +122,8 @@ public class GLText {
 	//    file - Filename of the font (.ttf, .otf) to use. In 'Assets' folder.
 	//    size - Requested pixel size of font (height)
 	//    padX, padY - Extra padding per character (X+Y Axis); to prevent overlapping characters.
-	public boolean load(String file, int size, int padX, int padY) {
+	@SuppressWarnings({"UnusedAssignment"})
+    public boolean load(String file, int size, int padX, int padY) {
 		// setup requested values
 		fontPadX = padX;                                // Set Requested X Axis Padding
 		fontPadY = padY;                                // Set Requested Y Axis Padding

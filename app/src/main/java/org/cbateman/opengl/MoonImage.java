@@ -9,6 +9,7 @@ import java.nio.ByteOrder;
 /**
  * Renders the moon image.
  */
+@SuppressWarnings("WeakerAccess")
 public class MoonImage extends Image {
 
     public static final float MIN_SPEED = 0.20f;

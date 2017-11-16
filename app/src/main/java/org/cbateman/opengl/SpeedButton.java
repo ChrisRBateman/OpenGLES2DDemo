@@ -10,6 +10,7 @@ import java.nio.ByteOrder;
 /**
  * Clicking speed button changes speed of moon.
  */
+@SuppressWarnings("WeakerAccess")
 public class SpeedButton extends Button {
 
     private int[] mTexIdArray = new int[3];

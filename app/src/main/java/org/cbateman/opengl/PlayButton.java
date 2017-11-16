@@ -10,6 +10,7 @@ import java.nio.ByteOrder;
 /**
  * Clicking play button starts and stops moon.
  */
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class PlayButton extends Button {
 
     private int[] mTexIdArray = new int[3];

@@ -18,6 +18,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Renderer class (registered with GLSurfaceView) that is responsible for making OpenGL
  * calls to render a frame.
  */
+@SuppressWarnings("WeakerAccess")
 public class DemoRenderer implements GLSurfaceView.Renderer {
 
     private static final String TAG = Constants.TAG;
@@ -121,6 +122,7 @@ public class DemoRenderer implements GLSurfaceView.Renderer {
      * @param width the surface width
      * @param height the surface height
      */
+    @SuppressWarnings("unused")
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         mWidth = width;
         mHeight = height;
@@ -149,7 +151,7 @@ public class DemoRenderer implements GLSurfaceView.Renderer {
         mTimeHelper.init();
 
         mGLText = new GLText(mContext.getAssets());
-        mGLText.load("Roboto-Regular.ttf", 28, 2, 2);
+        boolean result = mGLText.load("Roboto-Regular.ttf", 28, 2, 2);
         mSPFBuffer.setLength(0);
 
         // Set up a separate projection view for the text

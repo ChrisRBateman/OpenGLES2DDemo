@@ -1,5 +1,6 @@
 package org.cbateman.opengl.text.gltext;
 
+@SuppressWarnings("WeakerAccess")
 class TextureRegion {
 
     //--Members--//
